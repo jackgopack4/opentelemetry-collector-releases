@@ -1,9 +1,6 @@
 name: Builder - Release
 
 on:
-  workflow_dispatch:
-    tags:
-      - "v*"
   push:
     tags:
       - "v*"
@@ -32,7 +29,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Github Release
         run: |
-          gh release create ${{ github.ref_name }} -t ${{ github.ref_name }} -n "### Images and binaries here: https://github.com/open-telemetry/opentelemetry-collector-releases/releases/tag/${{ github.ref_name }}"
+          gh release create ${{ github.ref_name }} -t ${{ github.ref_name }} -n "### OpenTelemetry Collector Builder tool (ocb) release ${{ github.ref_name }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
