@@ -25,6 +25,7 @@ jobs:
           distribution: goreleaser
           version: latest
           args: release --clean -f opentelemetry-collector/cmd/builder/.goreleaser.yml
+          workdir: opentelemetry-collector
         env:
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
