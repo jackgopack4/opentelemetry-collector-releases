@@ -14,10 +14,6 @@ jobs:
         with:
           fetch-depth: 0
           repository: "jackgopack4/opentelemetry-collector"
-      - name: Show Working Directory
-        run: ls -la
-      - name: Print go.sum
-        run: cat go.sum
       - name: Setup Go
         uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
