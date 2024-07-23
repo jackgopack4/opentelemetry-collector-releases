@@ -1,7 +1,7 @@
 GO ?= go
 GORELEASER ?= goreleaser
 
-OTELCOL_BUILDER_VERSION ?= 0.105.0
+OTELCOL_BUILDER_VERSION ?= 0.105.1
 OTELCOL_BUILDER_DIR ?= ${HOME}/bin
 OTELCOL_BUILDER ?= ${OTELCOL_BUILDER_DIR}/ocb
 
@@ -40,7 +40,7 @@ ifeq (, $(shell command -v ocb 2>/dev/null))
 	[ "$${machine}" != x86_64 ] || machine=amd64 ;\
 	echo "Installing ocb ($${os}/$${machine}) at $(OTELCOL_BUILDER_DIR)";\
 	mkdir -p $(OTELCOL_BUILDER_DIR) ;\
-	curl -sfLo $(OTELCOL_BUILDER) "https://github.com/open-telemetry/opentelemetry-collector/releases/download/cmd%2Fbuilder%2Fv$(OTELCOL_BUILDER_VERSION)/ocb_$(OTELCOL_BUILDER_VERSION)_$${os}_$${machine}" ;\
+	curl -sfLo $(OTELCOL_BUILDER) "https://github.com/jackgopack4/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv$(OTELCOL_BUILDER_VERSION)/ocb_$(OTELCOL_BUILDER_VERSION)_$${os}_$${machine}" ;\
 	chmod +x $(OTELCOL_BUILDER) ;\
 	}
 else
@@ -65,7 +65,7 @@ goreleaser:
 		fi \
 	}
 
-REMOTE?=git@github.com:open-telemetry/opentelemetry-collector-releases.git
+REMOTE?=git@github.com:jackgopack4/opentelemetry-collector-releases.git
 .PHONY: push-tags
 push-tags:
 	@[ "${TAG}" ] || ( echo ">> env var TAG is not set"; exit 1 )
