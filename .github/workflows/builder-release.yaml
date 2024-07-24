@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0
           repository: "jackgopack4/opentelemetry-collector"
           ref: ${{ github.ref_name }}
-          path: "core"
+          path: ".core"
       - name: List directory contents
         run: ls -al
       - name: Setup Go

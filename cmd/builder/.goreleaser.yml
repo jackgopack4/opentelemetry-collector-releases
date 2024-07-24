@@ -3,7 +3,7 @@ before:
     - go mod download
 monorepo:
   tag_prefix: cmd/builder/
-  dir: core/cmd/builder
+  dir: .core/cmd/builder
 builds:
   - flags:
       - -trimpath
