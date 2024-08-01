@@ -38,11 +38,11 @@ jobs:
           repository: "open-telemetry/opentelemetry-collector"
           ref: ${{ github.ref_name }}
           path: ".core"
-      - run: ls -la
       - name: Setup Go
         uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
           go-version: ~1.21.5
+      - run: ls -la cmd/builder
       - name: Check GoReleaser
         uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200 # v6.0.0
         with:
