@@ -1,12 +1,29 @@
-name: Builder - Check and Release
-# combines function of builder-release and check-builder workflows, originally from opentelemetry-collector
+name: Continuous Integration - Builder - GoReleaser
+
 on:
   push:
-    tags:
-      - "v*"
+    branches: [main]
+    paths:
+      - "distributions/otelcol-contrib/**"
+      - "cmd/**"
+      - ".github/**"
+      - "scripts/**"
+      - "Makefile"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    branches: [main]
+    paths:
+      - "distributions/otelcol-contrib/**"
+      - "cmd/**"
+      - ".github/**"
+      - "scripts/**"
+      - "Makefile"
+      - "go.mod"
+      - "go.sum"
 
 jobs:
-  goreleaser:
+  check-goreleaser:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Releases Repo
@@ -21,21 +38,25 @@ jobs:
           repository: "open-telemetry/opentelemetry-collector"
           ref: ${{ github.ref_name }}
           path: ".core"
-      - name: Push cmd/builder Tag
-        uses: actions-ecosystem/action-push-tag@6e82caefe706f5a729e354df7443dc82f98a414f # v1.0.0
-        with:
-          tag: "cmd/builder/${{ github.ref_name }}"
-          message: "Releasing ocb binaries for ${{ github.ref_name }}"
       - name: Setup Go
         uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
           go-version: ~1.21.5
+      - name: Check GoReleaser
+        uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200 # v6.0.0
+        with:
+          distribution: goreleaser-pro
+          version: latest
+          args: check --verbose cmd/builder/.goreleaser.yml
+        env:
+          GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200 # v6.0.0
         with:
           distribution: goreleaser-pro
           version: latest
-          args: release --clean -f cmd/builder/.goreleaser.yml
+          args: --snapshot --clean -f cmd/builder/.goreleaser.yml
         env:
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
