@@ -1,4 +1,4 @@
-name: Continuous Integration - Builder - GoReleaser
+name: Continuous Integration - Builder - Test Build
 
 on:
   push:
@@ -26,6 +26,10 @@ jobs:
   check-goreleaser:
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Go
+        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+        with:
+          go-version: ~1.21.5
       - name: Checkout Releases Repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
@@ -38,11 +42,11 @@ jobs:
           repository: "open-telemetry/opentelemetry-collector"
           ref: ${{ github.ref_name }}
           path: ".core"
-      - name: Setup Go
-        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
-        with:
-          go-version: ~1.21.5
-      - run: ls -la cmd/builder
+      - name: list directory contents
+        run: |
+          ls -la 
+          ls -la cmd
+          ls -la cmd/builder
       - name: Check GoReleaser
         uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200 # v6.0.0
         with:
