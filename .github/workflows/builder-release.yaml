@@ -18,8 +18,8 @@ jobs:
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0
-          repository: "jackgopack4/opentelemetry-collector"
-          ref: ${{ github.ref_name }}
+          repository: "open-telemetry/opentelemetry-collector"
+          ref: "cmd/builder/${{ github.ref_name }}"
           path: ".core"
       - name: Push cmd/builder Tag
         uses: actions-ecosystem/action-push-tag@6e82caefe706f5a729e354df7443dc82f98a414f # v1.0.0

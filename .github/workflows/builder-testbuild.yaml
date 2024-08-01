@@ -39,8 +39,7 @@ jobs:
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0
-          repository: "jackgopack4/opentelemetry-collector"
-          ref: ${{ github.ref_name }}
+          repository: "open-telemetry/opentelemetry-collector"
           path: ".core"
       - name: list directory contents
         run: |
