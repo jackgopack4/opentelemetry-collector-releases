@@ -9,7 +9,7 @@ DISTRIBUTIONS ?= "otelcol,otelcol-contrib,otelcol-k8s"
 GEN_CONFIG_DISTRIBUTIONS ?= "otelcol,otelcol-contrib"
 
 # required to use specific ocb builder version
-GO111MODULE=on
+# GO111MODULE=on
 
 ci: check build
 check: ensure-goreleaser-up-to-date
