@@ -2,7 +2,7 @@ dist:
   name: otelcol-custom
   description: OpenTelemetry Collector
   version: 0.107.0
-  output_path: /tmp/dist
+  output_path: /app
   otelcol_version: 0.107.0
 
 receivers:
