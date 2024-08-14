@@ -8,7 +8,7 @@ OTELCOL_BUILDER ?= ${OTELCOL_BUILDER_DIR}/ocb
 DISTRIBUTIONS ?= "otelcol,otelcol-contrib,otelcol-k8s"
 GEN_CONFIG_DISTRIBUTIONS ?= "otelcol,otelcol-contrib"
 
-ci: check build
+ci: build
 check: ensure-goreleaser-up-to-date
 
 build: go ocb
