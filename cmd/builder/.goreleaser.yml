@@ -30,8 +30,8 @@ dockers:
   - goos: linux
     goarch: amd64
     dockerfile: Dockerfile
-    # image_templates:
-    #   - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-amd64
+    image_templates:
+      - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-amd64
     extra_files: 
       - builder-config.yaml
     build_flag_templates:
@@ -46,8 +46,8 @@ dockers:
     use: buildx
 docker_manifests:
   - name_template: johnpeterson785/opentelemetry-collector-builder:{{ .Version }}
-    # image_templates:
-    #   - otel/opentelemetry-collector:{{ .Version }}-amd64
+    image_templates:
+      - otel/opentelemetry-collector:{{ .Version }}-amd64
 # signs:
 #   - cmd: cosign
 #     args:
