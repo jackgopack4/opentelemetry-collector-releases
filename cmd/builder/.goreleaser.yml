@@ -114,7 +114,7 @@ dockers:
       - --label=org.opencontainers.image.licenses=Apache-2.0
   - goos: windows
     goarch: amd64
-    dockerfile: Dockerfile
+    dockerfile: Dockerfile.windows
     image_templates:
       - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-windows-amd64
       - johnpeterson785/opentelemetry-collector-builder:latest-windows-amd64

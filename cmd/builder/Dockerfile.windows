@@ -1,0 +1,14 @@
+FROM golang:1.23 AS build
+
+WORKDIR C:\\build
+
+# Copy default builder config and ocb binary into the container
+COPY builder-config.yaml C:\\build\\builder-config.yaml
+COPY ocb.exe C:\\build\\ocb.exe
+
+# RUN C:\Windows\System32\icacls.exe 'C:\build\ocb.exe' /grant Everyone:(RX)
+
+ENTRYPOINT [ "C:\\build\\ocb.exe"]
+# default arguments to use provided builder config file from documentation;
+# replace if using a different file location or file name
+CMD [ "--config", "C:\\build\\builder-config.yaml" ]
