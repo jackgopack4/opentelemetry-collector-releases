@@ -26,7 +26,7 @@ builds:
 dockers:
   - goos: linux
     goarch: amd64
-    dockerfile: Dockerfile
+    dockerfile: ../../../cmd/builder/Dockerfile
     image_templates:
       - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-amd64
     extra_files: 
