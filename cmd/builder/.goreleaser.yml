@@ -33,6 +33,8 @@ dockers:
     image_templates:
       - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-amd64
       - johnpeterson785/opentelemetry-collector-builder:latest-amd64
+      - ghcr.io/jackgopack4/opentelemetry-collector-releases/opentelemetry-collector-builder:{{ .Version }}-amd64
+      - ghcr.io/jackgopack4/opentelemetry-collector-releases/opentelemetry-collector-builder:latest-amd64
     extra_files: 
       - builder-config.yaml
     build_flag_templates:
@@ -50,6 +52,8 @@ dockers:
     image_templates:
       - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-arm64
       - johnpeterson785/opentelemetry-collector-builder:latest-arm64
+      - ghcr.io/jackgopack4/opentelemetry-collector-releases/opentelemetry-collector-builder:{{ .Version }}-arm64
+      - ghcr.io/jackgopack4/opentelemetry-collector-releases/opentelemetry-collector-builder:latest-arm64
     extra_files: 
       - builder-config.yaml
     build_flag_templates:
@@ -67,6 +71,8 @@ dockers:
     image_templates:
       - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-ppc64le
       - johnpeterson785/opentelemetry-collector-builder:latest-ppc64le
+      - ghcr.io/jackgopack4/opentelemetry-collector-releases/opentelemetry-collector-builder:{{ .Version }}-ppc64le
+      - ghcr.io/jackgopack4/opentelemetry-collector-releases/opentelemetry-collector-builder:latest-ppc64le
     extra_files: 
       - builder-config.yaml
     build_flag_templates:
@@ -86,9 +92,20 @@ docker_manifests:
       - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-arm64
       - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-ppc64le
   - name_template: johnpeterson785/opentelemetry-collector-builder:latest
+    image_templates:
       - johnpeterson785/opentelemetry-collector-builder:latest-amd64
       - johnpeterson785/opentelemetry-collector-builder:latest-arm64
       - johnpeterson785/opentelemetry-collector-builder:latest-ppc64le
+  - name_template: ghcr.io/jackgopack4/opentelemetry-collector-releases/opentelemetry-collector-builder:{{ .Version }}
+    image_templates:
+      - ghcr.io/jackgopack4/opentelemetry-collector-releases/opentelemetry-collector-builder:{{ .Version }}-amd64
+      - ghcr.io/jackgopack4/opentelemetry-collector-releases/opentelemetry-collector-builder:{{ .Version }}-arm64
+      - ghcr.io/jackgopack4/opentelemetry-collector-releases/opentelemetry-collector-builder:{{ .Version }}-ppc64le
+  - name_template: ghcr.io/jackgopack4/opentelemetry-collector-releases/opentelemetry-collector-builder:latest
+    image_templates:
+      - ghcr.io/jackgopack4/opentelemetry-collector-releases/opentelemetry-collector-builder:latest-amd64
+      - ghcr.io/jackgopack4/opentelemetry-collector-releases/opentelemetry-collector-builder:latest-arm64
+      - ghcr.io/jackgopack4/opentelemetry-collector-releases/opentelemetry-collector-builder:latest-ppc64le
 release:
   github:
     owner: jackgopack4
