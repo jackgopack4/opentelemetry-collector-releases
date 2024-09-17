@@ -23,6 +23,33 @@ builds:
       - goos: windows
         goarch: arm64
     binary: ocb
+dockers:
+  - goos: linux
+    goarch: amd64
+    dockerfile: Dockerfile
+    image_templates:
+      - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-amd64
+    extra_files: 
+      - ../../../cmd/builder/builder-config.yaml
+    build_flag_templates:
+      - --pull
+      - --platform=linux/amd64
+      - --label=org.opencontainers.image.created={{.Date}}
+      - --label=org.opencontainers.image.name={{.ProjectName}}
+      - --label=org.opencontainers.image.revision={{.FullCommit}}
+      - --label=org.opencontainers.image.version={{.Version}}
+      - --label=org.opencontainers.image.source={{.GitURL}}
+      - --label=org.opencontainers.image.licenses=Apache-2.0
+    use: buildx
+docker_manifests:
+  - name_template: johnpeterson785/opentelemetry-collector-builder:{{ .Version }}
+    image_templates:
+      - otel/opentelemetry-collector:{{ .Version }}-amd64
+docker_signs:
+  - args:
+      - sign
+      - ${artifact}
+    artifacts: all
 release:
   github:
     owner: open-telemetry
