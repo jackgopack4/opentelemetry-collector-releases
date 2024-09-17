@@ -67,7 +67,7 @@ docker_manifests:
 #     artifacts: all
 release:
   github:
-    owner: open-telemetry
+    owner: jackgopack4
     name: opentelemetry-collector-releases
   header: |
     ### Images and binaries for collector distributions here: https://github.com/open-telemetry/opentelemetry-collector-releases/releases/tag/{{ .Tag }}
