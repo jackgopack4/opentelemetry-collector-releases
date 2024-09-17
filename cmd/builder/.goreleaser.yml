@@ -32,6 +32,7 @@ dockers:
     dockerfile: Dockerfile
     image_templates:
       - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-amd64
+      - johnpeterson785/opentelemetry-collector-builder:latest-amd64
     extra_files: 
       - builder-config.yaml
     build_flag_templates:
@@ -43,28 +44,108 @@ dockers:
       - --label=org.opencontainers.image.version={{.Version}}
       - --label=org.opencontainers.image.source={{.GitURL}}
       - --label=org.opencontainers.image.licenses=Apache-2.0
+  - goos: linux
+    goarch: arm64
+    dockerfile: Dockerfile
+    image_templates:
+      - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-arm64
+      - johnpeterson785/opentelemetry-collector-builder:latest-arm64
+    extra_files: 
+      - builder-config.yaml
+    build_flag_templates:
+      - --pull
+      - --platform=linux/arm64
+      - --label=org.opencontainers.image.created={{.Date}}
+      - --label=org.opencontainers.image.name={{.ProjectName}}
+      - --label=org.opencontainers.image.revision={{.FullCommit}}
+      - --label=org.opencontainers.image.version={{.Version}}
+      - --label=org.opencontainers.image.source={{.GitURL}}
+      - --label=org.opencontainers.image.licenses=Apache-2.0
+  - goos: linux
+    goarch: ppc64le
+    dockerfile: Dockerfile
+    image_templates:
+      - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-ppc64le
+      - johnpeterson785/opentelemetry-collector-builder:latest-ppc64le
+    extra_files: 
+      - builder-config.yaml
+    build_flag_templates:
+      - --pull
+      - --platform=linux/ppc64le
+      - --label=org.opencontainers.image.created={{.Date}}
+      - --label=org.opencontainers.image.name={{.ProjectName}}
+      - --label=org.opencontainers.image.revision={{.FullCommit}}
+      - --label=org.opencontainers.image.version={{.Version}}
+      - --label=org.opencontainers.image.source={{.GitURL}}
+      - --label=org.opencontainers.image.licenses=Apache-2.0
+  - goos: darwin
+    goarch: amd64
+    dockerfile: Dockerfile
+    image_templates:
+      - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-darwin-amd64
+      - johnpeterson785/opentelemetry-collector-builder:latest-darwin-amd64
+    extra_files: 
+      - builder-config.yaml
+    build_flag_templates:
+      - --pull
+      - --platform=darwin/amd64
+      - --label=org.opencontainers.image.created={{.Date}}
+      - --label=org.opencontainers.image.name={{.ProjectName}}
+      - --label=org.opencontainers.image.revision={{.FullCommit}}
+      - --label=org.opencontainers.image.version={{.Version}}
+      - --label=org.opencontainers.image.source={{.GitURL}}
+      - --label=org.opencontainers.image.licenses=Apache-2.0
+  - goos: darwin
+    goarch: amd64
+    dockerfile: Dockerfile
+    image_templates:
+      - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-darwin-arm64
+      - johnpeterson785/opentelemetry-collector-builder:latest-darwin-arm64
+    extra_files: 
+      - builder-config.yaml
+    build_flag_templates:
+      - --pull
+      - --platform=darwin/arm64
+      - --label=org.opencontainers.image.created={{.Date}}
+      - --label=org.opencontainers.image.name={{.ProjectName}}
+      - --label=org.opencontainers.image.revision={{.FullCommit}}
+      - --label=org.opencontainers.image.version={{.Version}}
+      - --label=org.opencontainers.image.source={{.GitURL}}
+      - --label=org.opencontainers.image.licenses=Apache-2.0
+  - goos: windows
+    goarch: amd64
+    dockerfile: Dockerfile
+    image_templates:
+      - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-windows-amd64
+      - johnpeterson785/opentelemetry-collector-builder:latest-windows-amd64
+    extra_files: 
+      - builder-config.yaml
+    build_flag_templates:
+      - --pull
+      - --platform=windows/amd64
+      - --label=org.opencontainers.image.created={{.Date}}
+      - --label=org.opencontainers.image.name={{.ProjectName}}
+      - --label=org.opencontainers.image.revision={{.FullCommit}}
+      - --label=org.opencontainers.image.version={{.Version}}
+      - --label=org.opencontainers.image.source={{.GitURL}}
+      - --label=org.opencontainers.image.licenses=Apache-2.0
     use: buildx
 docker_manifests:
   - name_template: johnpeterson785/opentelemetry-collector-builder:{{ .Version }}
     image_templates:
-      - otel/opentelemetry-collector:{{ .Version }}-amd64
-# signs:
-#   - cmd: cosign
-#     args:
-#       - sign-blob
-#       - --output-signature
-#       - ${artifact}.sig
-#       - --output-certificate
-#       - ${artifact}.pem
-#       - ${artifact}
-#     signature: ${artifact}.sig
-#     artifacts: all
-#     certificate: ${artifact}.pem
-# docker_signs:
-#   - args:
-#       - sign
-#       - ${artifact}
-#     artifacts: all
+      - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-amd64
+      - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-arm64
+      - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-ppc64le
+      - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-darwin-amd64
+      - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-darwin-arm64
+      - johnpeterson785/opentelemetry-collector-builder:{{ .Version }}-windows-amd64
+  - name_template: johnpeterson785/opentelemetry-collector-builder:latest
+      - johnpeterson785/opentelemetry-collector-builder:latest-amd64
+      - johnpeterson785/opentelemetry-collector-builder:latest-arm64
+      - johnpeterson785/opentelemetry-collector-builder:latest-ppc64le
+      - johnpeterson785/opentelemetry-collector-builder:latest-darwin-amd64
+      - johnpeterson785/opentelemetry-collector-builder:latest-darwin-arm64
+      - johnpeterson785/opentelemetry-collector-builder:latest-windows-amd64
 release:
   github:
     owner: jackgopack4
