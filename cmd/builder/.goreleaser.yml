@@ -4,6 +4,7 @@ before:
 monorepo:
   tag_prefix: cmd/builder/
   dir: .core/cmd/builder
+version: 2
 env:
   - COSIGN_YES=true
 builds:
@@ -47,23 +48,23 @@ docker_manifests:
   - name_template: johnpeterson785/opentelemetry-collector-builder:{{ .Version }}
     image_templates:
       - otel/opentelemetry-collector:{{ .Version }}-amd64
-signs:
-  - cmd: cosign
-    args:
-      - sign-blob
-      - --output-signature
-      - ${artifact}.sig
-      - --output-certificate
-      - ${artifact}.pem
-      - ${artifact}
-    signature: ${artifact}.sig
-    artifacts: all
-    certificate: ${artifact}.pem
-docker_signs:
-  - args:
-      - sign
-      - ${artifact}
-    artifacts: all
+# signs:
+#   - cmd: cosign
+#     args:
+#       - sign-blob
+#       - --output-signature
+#       - ${artifact}.sig
+#       - --output-certificate
+#       - ${artifact}.pem
+#       - ${artifact}
+#     signature: ${artifact}.sig
+#     artifacts: all
+#     certificate: ${artifact}.pem
+# docker_signs:
+#   - args:
+#       - sign
+#       - ${artifact}
+#     artifacts: all
 release:
   github:
     owner: open-telemetry
