@@ -10,7 +10,7 @@ builds:
     ldflags:
       - -s
       - -w 
-      - -X internal.version={{ .Version }}
+      - -X go.opentelemetry.io/collector/cmd/builder/internal.version={{ .Version }}
     env:
       - CGO_ENABLED=0
     goos:
