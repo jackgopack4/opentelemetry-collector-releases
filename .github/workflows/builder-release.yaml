@@ -7,6 +7,12 @@ on:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+    
+    permissions:
+      id-token: write
+      packages: write
+      contents: write
+
     steps:
       - name: Checkout Releases Repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
@@ -31,6 +37,8 @@ jobs:
         run:  |
           cp cmd/builder/Dockerfile .core/cmd/builder/Dockerfile
           cp cmd/builder/builder-config.yaml .core/cmd/builder/builder-config.yaml
+      - uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 # v3.6.0
+      - uses: anchore/sbom-action/download-syft@61119d458adab75f756bc0b9e4bde25725f86a7a # v0.17.2
       - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
         with:
           platforms: arm64,ppc64le,linux/arm/v7,s390x
@@ -62,3 +70,4 @@ jobs:
         env:
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          COSIGN_YES: true
