@@ -65,7 +65,7 @@ goreleaser:
 		fi \
 	}
 
-REMOTE?=git@github.com:jackgopack4/opentelemetry-collector-releases.git
+REMOTE?=git@github.com:open-telemetry/opentelemetry-collector-releases.git
 .PHONY: push-tags
 push-tags:
 	@[ "${TAG}" ] || ( echo ">> env var TAG is not set"; exit 1 )
@@ -74,7 +74,8 @@ push-tags:
 	@echo "Pushing tag ${TAG}"
 	@git push ${REMOTE} ${TAG}
 
-REMOTE?=git@github.com:jackgopack4/opentelemetry-collector-releases.git
+# Used for debug only
+REMOTE?=git@github.com:open-telemetry/opentelemetry-collector-releases.git
 .PHONY: delete-tags
 delete-tags:
 	@[ "${TAG}" ] || ( echo ">> env var TAG is not set"; exit 1 )
@@ -89,6 +90,7 @@ delete-tags:
 	@git push ${REMOTE} :refs/tags/${TAG}
 	@git push ${REMOTE} :refs/tags/cmd/builder/${TAG}
 
-REMOTE?=git@github.com:jackgopack4/opentelemetry-collector-releases.git
+# Used for debug only
+REMOTE?=git@github.com:open-telemetry/opentelemetry-collector-releases.git
 .PHONY: repeat-tags
 repeat-tags: delete-tags push-tags
