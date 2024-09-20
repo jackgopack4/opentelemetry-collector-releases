@@ -61,7 +61,7 @@ jobs:
           git checkout -b update-version-${{ github.event.inputs.new_version }}
           git add Makefile cmd/builder/builder-config.yaml distributions/otelcol/manifest.yaml distributions/otelcol-contrib/manifest.yaml distributions/otelcol-k8s/manifest.yaml
           git commit -m "Update version from ${{ github.event.inputs.old_version }} to ${{ github.event.inputs.new_version }}"
-          git push --set-upstream origin update-version-${{ github.event.inputs.new_version }}
+          git push -u origin update-version-${{ github.event.inputs.new_version }}
           git remote add upstream https://github.com/open-telemetry/opentelemetry-collector-releases.git
           git remote -v
           git fetch upstream
