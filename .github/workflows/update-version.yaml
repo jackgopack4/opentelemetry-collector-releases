@@ -6,28 +6,35 @@ on:
       old_version:
         description: 'Previous semantic version number (e.g., v0.109.0)'
         required: true
-        default: 'v0.109.0'
       new_version:
         description: 'Next semantic version number (e.g., v0.110.0)'
         required: true
-        default: 'v0.110.0'
 
 jobs:
   update-version:
     runs-on: ubuntu-latest
-
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN}}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Strip 'v' from new version for OTELCOL_BUILDER_VERSION
-        id: strip_v
-        run: |
-          echo "stripped_version=${{ github.event.inputs.new_version#v }}" >> $GITHUB_ENV
-
+        uses: bhowell2/github-substring-action@latest
+        id: strip_new_version
+        with:
+          value: ${{ github.event.inputs.new_version }}
+          index_of_str: 'v'
+      - name: Strip 'v' from old version for OTELCOL_BUILDER_VERSION
+        uses: bhowell2/github-substring-action@latest
+        id: strip_old_version
+        with:
+          value: ${{ github.event.inputs.old_version }}
+          index_of_str: 'v'
+      
       - name: Update version in Makefile
         run: |
-          sed -i "s/OTELCOL_BUILDER_VERSION ?= ${{ github.event.inputs.old_version#v }}/OTELCOL_BUILDER_VERSION ?= ${{ env.stripped_version }}/g" Makefile
+          sed -i "s/OTELCOL_BUILDER_VERSION ?= ${{ steps.strip_old_version.outputs.substring }}/OTELCOL_BUILDER_VERSION ?= ${{ steps.strip_new_version.outputs.substring }}/g" Makefile
 
       - name: Update version in builder-config.yaml
         run: |
@@ -45,20 +52,14 @@ jobs:
         run: |
           sed -i "s/${{ github.event.inputs.old_version }}/${{ github.event.inputs.new_version }}/g" distributions/otelcol-k8s/manifest.yaml
 
-      - name: Commit changes
+      - name: Commit changes and draft PR
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b update-version-${{ github.event.inputs.new_version }}
           git add Makefile cmd/builder/builder-config.yaml distributions/otelcol/manifest.yaml distributions/otelcol-contrib/manifest.yaml distributions/otelcol-k8s/manifest.yaml
           git commit -m "Update version from ${{ github.event.inputs.old_version }} to ${{ github.event.inputs.new_version }}"
-          git push --set-upstream origin update-version-${{ github.event.inputs.new_version }}
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: update-version-${{ github.event.inputs.new_version }}
-          title: "Update version from ${{ github.event.inputs.old_version }} to ${{ github.event.inputs.new_version }}"
-          body: "This PR updates the version from ${{ github.event.inputs.old_version }} to ${{ github.event.inputs.new_version }} in the following files:\n- Makefile\n- cmd/builder/builder-config.yaml\n- distributions/otelcol/manifest.yaml\n- distributions/otelcol-contrib/manifest.yaml\n- distributions/otelcol-k8s/manifest.yaml"
-          # labels: "version update"
+          git push -u origin update-version-${{ github.event.inputs.new_version }}
+          gh pr create --title "[chore] Prepare release ${{ github.event.inputs.new_version }}" \
+            --body "This PR updates the version from ${{ github.event.inputs.old_version }} to ${{ github.event.inputs.new_version }}" \
+            --base main --head update-version-${{ github.event.inputs.new_version }} --draft
