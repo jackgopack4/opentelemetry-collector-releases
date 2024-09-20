@@ -54,7 +54,7 @@ jobs:
         run: |
           sed -i "s/${{ github.event.inputs.old_version }}/${{ github.event.inputs.new_version }}/g" distributions/otelcol-k8s/manifest.yaml
 
-      - name: Commit changes
+      - name: Commit changes and draft PR
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -62,6 +62,9 @@ jobs:
           git add Makefile cmd/builder/builder-config.yaml distributions/otelcol/manifest.yaml distributions/otelcol-contrib/manifest.yaml distributions/otelcol-k8s/manifest.yaml
           git commit -m "Update version from ${{ github.event.inputs.old_version }} to ${{ github.event.inputs.new_version }}"
           git push --set-upstream origin update-version-${{ github.event.inputs.new_version }}
+          git remote add upstream https://github.com/open-telemetry/opentelemetry-collector-releases.git
+          git remote -v
+          git fetch upstream
           gh pr create --title "[chore] Prepare release ${{ github.event.inputs.new_version }}" \
             --body "This PR updates the version from ${{ github.event.inputs.old_version }} to ${{ github.event.inputs.new_version }}" \
-            --base main --head update-version-${{ github.event.inputs.new_version }} --draft
+            --base upstream/main --head update-version-${{ github.event.inputs.new_version }} --draft
