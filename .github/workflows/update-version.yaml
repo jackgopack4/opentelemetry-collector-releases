@@ -25,7 +25,6 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-
       - name: Validate inputs
         run: |
           if [ -z "${{ github.event.inputs.current_beta }}" ] && [ -z "${{ github.event.inputs.current_stable }}" ]; then
