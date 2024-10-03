@@ -1,4 +1,3 @@
-# Note: at least one of 'current beta' or 'current stable' must be provided
 name: Update Version
 on:
   workflow_dispatch:
