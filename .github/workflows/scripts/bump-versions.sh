@@ -8,7 +8,18 @@
 
 # Function to display usage
 usage() {
-  echo "Usage: $0 --current_beta <current_beta> [--current_stable <current_stable>] [--next_beta <next_beta>] [--next_stable <next_stable>]"
+  echo "Usage: $0 [--commit] [--push] --current-beta-core <current-beta-core> [--current-beta-contrib <current-beta-contrib>] [--current-stable <current-stable>] [--next-beta-core <next-beta-core>] [--next-beta-contrib <next-beta-contrib>] [--next-stable <next-stable>]"
+  echo "  --current-beta-core: Current beta version of the core component (e.g., v0.110.0)"
+  echo "  --current-beta-contrib: Current beta version of the contrib component (e.g., v0.110.0)"
+  echo "  --current-stable: Current stable version of the core component (e.g., v1.16.0)"
+  echo "  at least one of the above three arguments is required, or there is no version to update."
+  echo
+  echo "  --next-beta-core: Next beta version of the core component (e.g., v0.111.0)"
+  echo "  --next-beta-contrib: Next beta version of the contrib component (e.g., v0.111.0)"
+  echo "  --next-stable: Next stable version of the core component (e.g., v1.17.0)"
+  echo
+  echo "  --commit: Commit the changes to a new branch"
+  echo "  --push: Push the changes to the repo and create a draft PR (requires --commit)"
   exit 1
 }
 
@@ -24,33 +35,50 @@ validate_and_strip_version() {
   fi
   eval "$var_name='$version'"
 }
-
+commit_changes=false
+push_changes=false
 # Parse named arguments
 while [[ "$#" -gt 0 ]]; do
   case $1 in
-    --current_beta) current_beta="$2"; shift ;;
-    --current_stable) current_stable="$2"; shift ;;
-    --next_beta) next_beta="$2"; shift ;;
-    --next_stable) next_stable="$2"; shift ;;
+    --current-beta-core) current_beta_core="$2"; shift ;;
+    --current-beta-contrib) current_beta_contrib="$2"; shift ;;
+    --current-stable) current_stable="$2"; shift ;;
+    --next-beta-core) next_beta_core="$2"; shift ;;
+    --next-beta-contrib) next_beta_contrib="$2"; shift ;;
+    --next-stable) next_stable="$2"; shift ;;
+    --commit) commit_changes=true ;;
+    --push) push_changes=true ;;
     *) echo "Unknown parameter passed: $1"; usage ;;
   esac
   shift
 done
 
+# Check if --push is passed without --commit
+if [ "$push_changes" = true ] && [ "$commit_changes" = false ]; then
+  echo "--push requires --commit"
+  usage
+fi
+
 # Check if at least one of the required arguments is provided
-if [ -z "$current_beta" ] && [ -z "$current_stable" ]; then
+if [ -z "$current_beta_core" ] && [ -z "$current_beta_contrib" ] && [ -z "$current_stable" ]; then
   usage
 fi
 
 # Validate and strip versions
-if [ -n "$current_beta" ]; then
-  validate_and_strip_version current_beta
+if [ -n "$current_beta_core" ]; then
+  validate_and_strip_version current_beta_core
+fi
+if [ -n "$current_beta_contrib" ]; then
+  validate_and_strip_version current_beta_contrib
 fi
 if [ -n "$current_stable" ]; then
   validate_and_strip_version current_stable
 fi
-if [ -n "$next_beta" ]; then
-  validate_and_strip_version next_beta
+if [ -n "$next_beta_core" ]; then
+  validate_and_strip_version next_beta_core
+fi
+if [ -n "$next_beta_contrib" ]; then
+  validate_and_strip_version next_beta_contrib
 fi
 if [ -n "$next_stable" ]; then
   validate_and_strip_version next_stable
@@ -69,8 +97,11 @@ bump_version() {
 }
 
 # Infer the next beta version if not supplied
-if  [ -n "$current_beta" ] && [ -z "$next_beta" ]; then
-  next_beta=$(bump_version "$current_beta")
+if  [ -n "$current_beta_core" ] && [ -z "$next_beta_core" ]; then
+  next_beta_core=$(bump_version "$current_beta_core")
+fi
+if  [ -n "$current_beta_contrib" ] && [ -z "$next_beta_contrib" ]; then
+  next_beta_contrib=$(bump_version "$current_beta_contrib")
 fi
 
 # Infer the next stable version if current_stable provided and next version not supplied
@@ -78,30 +109,38 @@ if [ -n "$current_stable" ] && [ -z "$next_stable" ]; then
   next_stable=$(bump_version "$current_stable")
 fi
 
-
 # List of files to update
-# TODO: Uncomment cmd/builder/builder-config.yaml once PR #671 merged
 files=(
   "distributions/otelcol-contrib/manifest.yaml"
   "distributions/otelcol/manifest.yaml"
   "distributions/otelcol-k8s/manifest.yaml"
   "distributions/otelcol-otlp/manifest.yaml"
   "Makefile"
-  # "cmd/builder/builder-config-yaml"
 )
 
 # Update versions in each file
 for file in "${files[@]}"; do
   if [ -f "$file" ]; then
-    if [ -n "$current_beta" ]; then
-      sed -i.bak "s/$current_beta/$next_beta/g" "$file"
-      echo "Updated $file from $current_beta to $next_beta"
-    fi
-    if [ -n "$current_stable" ]; then
-      sed -i.bak "s/$current_stable/$next_stable/g" "$file"
-      echo "Updated $file from $current_stable to $next_stable"
-    fi
-    rm "${file}.bak"
+    temp_file=$(mktemp)
+    cp "$file" "$temp_file"
+    line_number=1
+    while IFS= read -r line; do
+      if [[ "$line" == *"github.com/open-telemetry/opentelemetry-collector-contrib"* ]]; then
+        if [ -n "$current_beta_contrib" ]; then
+          sed -i.bak "${line_number}s/$current_beta_contrib/$next_beta_contrib/" "$temp_file"
+        fi   
+      elif [[ "$line" == *"go.opentelemetry.io/collector"* ]]; then
+        if [ -n "$current_beta_core" ]; then
+          sed -i.bak "${line_number}s/$current_beta_core/$next_beta_core/" "$temp_file"
+        fi
+        if [ -n "$current_stable" ]; then
+          sed -i.bak "${line_number}s/$current_stable/$next_stable/" "$temp_file"
+        fi
+      fi
+      line_number=$((line_number + 1))
+    done < "$file"
+    mv "$temp_file" "$file"
+    rm "${temp_file}.bak"
   else
     echo "File $file does not exist"
   fi
@@ -109,36 +148,63 @@ done
 
 echo "Version update completed."
 
-Commit changes and draft PR
+# Commit changes and draft PR
+if [ "$commit_changes" = false ] && [ "$push_changes" = false ]; then
+  echo "Changes not committed and PR not created."
+  exit 0
+fi
+
 git config --global user.name "github-actions[bot]"
 git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-# TODO: Once Collector 1.0 is released, we can remove the beta version logic
-# for commit and PR creation
-if [ -n "$current_beta" ]; then
-  branch_name="update-version-${next_beta}"
+commit_changes() {
+  local current_version=$1
+  local next_version=$2
+  shift 2
+  local branch_name="update-version-${next_version}"
+
   git checkout -b "$branch_name"
-  git add Makefile \
-    distributions/otelcol/manifest.yaml \
-    distributions/otelcol-contrib/manifest.yaml \
-    distributions/otelcol-k8s/manifest.yaml
-  git commit -m "Update version from $current_beta to $next_beta"
+  for file in "${files[@]}"; do
+    git add "$file"
+  done
+  git commit -m "Update version from $current_version to $next_version"
+}
+
+push_changes_and_create_pr() {
+  local current_version=$1
+  local next_version=$2
+  shift 2
+  local branch_name="update-version-${next_version}"
+
   git push -u origin "$branch_name"
-  gh pr create --title "[chore] Prepare release $next_beta" \
-    --body "This PR updates the version from $current_beta to $next_beta" \
-    --base main --head "$branch_name" --draft
+  gh pr create --title "[chore] Prepare release $next_version" \
+    --body "This PR updates the version from $current_version to $next_version" \
+    --base main --head "$branch_name" --draft  
+}
+
+# TODO: Once Collector 1.0 is released, we can consider removing the
+# beta version check for commit and PR creation
+if [ -n "$current_beta_core" ]; then
+  if [ "$commit_changes" = true ]; then
+    commit_changes "$current_beta_core" "$next_beta_core"
+  fi
+  if [ "$push_changes" = true ]; then
+    push_changes_and_create_pr "$current_beta_core" "$next_beta_core"
+  fi
+elif [ -n "$current_beta_contrib" ]; then
+  if [ "$commit_changes" = true ]; then
+    commit_changes "$current_beta_contrib" "$next_beta_contrib"
+  fi
+  if [ "$push_changes" = true ]; then
+    push_changes_and_create_pr "$current_beta_contrib" "$next_beta_contrib"
+  fi
 else
-  branch_name="update-version-${next_stable}"
-  git checkout -b "$branch_name"
-  git add Makefile \
-    distributions/otelcol/manifest.yaml \
-    distributions/otelcol-contrib/manifest.yaml \
-    distributions/otelcol-k8s/manifest.yaml
-  git commit -m "Update version from $current_stable to $next_stable"
-  git push -u origin "$branch_name"
-  gh pr create --title "[chore] Prepare release $next_stable" \
-    --body "This PR updates the version from $current_stable to $next_stable" \
-    --base main --head "$branch_name" --draft
+  if [ "$commit_changes" = true ]; then
+    commit_changes "$current_stable" "$next_stable"
+  fi
+  if [ "$push_changes" = true ]; then
+    push_changes_and_create_pr "$current_stable" "$next_stable"
+  fi
 fi
 
 echo "Changes committed and PR created."
