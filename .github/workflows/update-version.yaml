@@ -55,7 +55,7 @@ jobs:
           if [ "${{ github.event.inputs.create_pr }}" = "true" ]; then
             args="--commit --pull-request"
           fi
-          .github/workflows/scripts/bump-versions.sh \ $args
+          .github/workflows/scripts/bump-versions.sh $args
         env:
           current_beta_core: ${{ github.event.inputs.current_beta_core }}
           current_beta_contrib: ${{ github.event.inputs.current_beta_contrib }}
