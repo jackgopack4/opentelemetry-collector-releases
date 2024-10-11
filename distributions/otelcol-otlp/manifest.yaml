@@ -7,12 +7,12 @@ dist:
   otelcol_version: 0.111.0
 
 exporters:
-  - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.111.0
-  - gomod: go.opentelemetry.io/collector/exporter/otlphttpexporter v0.111.0
+  - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.111.1
+  - gomod: go.opentelemetry.io/collector/exporter/otlphttpexporter v0.111.1
 
 receivers:
-  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.111.0
+  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.111.1
 
 providers:
-  - gomod: go.opentelemetry.io/collector/confmap/provider/envprovider v1.17.0
-  - gomod: go.opentelemetry.io/collector/confmap/provider/fileprovider v1.17.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/envprovider v1.17.1
+  - gomod: go.opentelemetry.io/collector/confmap/provider/fileprovider v1.17.1
