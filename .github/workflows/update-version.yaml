@@ -1,4 +1,4 @@
-name: Update Version
+name: Update Version in Distributions and Prepare PR
 on:
   workflow_dispatch:
     inputs:
@@ -27,7 +27,7 @@ on:
         required: false
         default: ''
       create_pr:
-        description: 'Push changes to a new branch and create a draft pull request'
+        description: 'Create a draft pull request with the changes'
         required: true
         type: boolean
         default: true
@@ -50,11 +50,12 @@ jobs:
 
       - name: Run bump-versions.sh
         run: |
+          chmod +x .github/workflows/scripts/bump-versions.sh && \
           args=""
           if [ "${{ github.event.inputs.create_pr }}" = "true" ]; then
             args="--commit --pull-request"
           fi
-          ./bump-versions.sh $args
+          .github/workflows/scripts/bump-versions.sh \ $args
         env:
           current_beta_core: ${{ github.event.inputs.current_beta_core }}
           current_beta_contrib: ${{ github.event.inputs.current_beta_contrib }}
