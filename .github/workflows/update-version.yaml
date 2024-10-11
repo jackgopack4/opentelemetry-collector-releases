@@ -2,22 +2,35 @@ name: Update Version
 on:
   workflow_dispatch:
     inputs:
-      current_beta:
-        description: 'Current beta version, e.g. v0.111.0 or 0.111.0'
+      current_beta_core:
+        description: 'Current collector core beta version, e.g. v0.111.0 or 0.111.0'
+        required: false
+        default: ''
+      current_beta_contrib:
+        description: 'Current collector contrib beta version, e.g. v0.111.0 or 0.111.0'
         required: false
         default: ''
       current_stable:
         description: 'Current stable version, e.g. v1.16.0 or 1.16.0'
         required: false
         default: ''
-      next_beta:
-        description: 'Next beta version (optional)'
+      next_beta_core:
+        description: 'Next collector core beta version (optional)'
+        required: false
+        default: ''
+      next_beta_contrib:
+        description: 'Next collector contrib beta version (optional)'
         required: false
         default: ''
       next_stable:
         description: 'Next stable version (optional)'
         required: false
         default: ''
+      create_pr:
+        description: 'Push changes to a new branch and create a draft pull request'
+        required: true
+        type: boolean
+        default: true
 
 jobs:
   update-version:
@@ -27,8 +40,8 @@ jobs:
     steps:
       - name: Validate inputs
         run: |
-          if [ -z "${{ github.event.inputs.current_beta }}" ] && [ -z "${{ github.event.inputs.current_stable }}" ]; then
-            echo "Error: At least one of 'current_beta' or 'current_stable' must be provided."
+          if [ -z "${{ github.event.inputs.current_beta_core }}" ] && [ -z "${{ github.event.inputs.current_beta_contrib }}" ] && [ -z "${{ github.event.inputs.current_stable }}" ]; then
+            echo "Error: At least one of 'current_beta_core', 'current_beta_contrib', or 'current_stable' must be provided."
             exit 1
           fi
 
@@ -37,11 +50,15 @@ jobs:
 
       - name: Run bump-versions.sh
         run: |
-          chmod +x .github/workflows/scripts/bump-versions.sh
-          .github/workflows/scripts/bump-versions.sh \
-            --current_beta "${{ github.event.inputs.current_beta }}" \
-            --current_stable "${{ github.event.inputs.current_stable }}" \
-            --next_beta "${{ github.event.inputs.next_beta }}" \
-            --next_stable "${{ github.event.inputs.next_stable }}"
+          args=""
+          if [ "${{ github.event.inputs.create_pr }}" = "true" ]; then
+            args="--commit --pull-request"
+          fi
+          ./bump-versions.sh $args
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          current_beta_core: ${{ github.event.inputs.current_beta_core }}
+          current_beta_contrib: ${{ github.event.inputs.current_beta_contrib }}
+          current_stable: ${{ github.event.inputs.current_stable }}
+          next_beta_core: ${{ github.event.inputs.next_beta_core }}
+          next_beta_contrib: ${{ github.event.inputs.next_beta_contrib }}
+          next_stable: ${{ github.event.inputs.next_stable }}

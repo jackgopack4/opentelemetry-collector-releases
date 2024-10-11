@@ -8,7 +8,7 @@
 
 # Function to display usage
 usage() {
-  echo "Usage: $0 [--commit] [--push] --current-beta-core <current-beta-core> [--current-beta-contrib <current-beta-contrib>] [--current-stable <current-stable>] [--next-beta-core <next-beta-core>] [--next-beta-contrib <next-beta-contrib>] [--next-stable <next-stable>]"
+  echo "Usage: $0 [--commit] [--pull-request] --current-beta-core <current-beta-core> [--current-beta-contrib <current-beta-contrib>] [--current-stable <current-stable>] [--next-beta-core <next-beta-core>] [--next-beta-contrib <next-beta-contrib>] [--next-stable <next-stable>]"
   echo "  --current-beta-core: Current beta version of the core component (e.g., v0.110.0)"
   echo "  --current-beta-contrib: Current beta version of the contrib component (e.g., v0.110.0)"
   echo "  --current-stable: Current stable version of the core component (e.g., v1.16.0)"
@@ -19,7 +19,7 @@ usage() {
   echo "  --next-stable: Next stable version of the core component (e.g., v1.17.0)"
   echo
   echo "  --commit: Commit the changes to a new branch"
-  echo "  --push: Push the changes to the repo and create a draft PR (requires --commit)"
+  echo "  --pull-request: Push the changes to the repo and create a draft PR (requires --commit)"
   exit 1
 }
 
@@ -36,7 +36,7 @@ validate_and_strip_version() {
   eval "$var_name='$version'"
 }
 commit_changes=false
-push_changes=false
+create_pr=false
 # Parse named arguments
 while [[ "$#" -gt 0 ]]; do
   case $1 in
@@ -47,15 +47,15 @@ while [[ "$#" -gt 0 ]]; do
     --next-beta-contrib) next_beta_contrib="$2"; shift ;;
     --next-stable) next_stable="$2"; shift ;;
     --commit) commit_changes=true ;;
-    --push) push_changes=true ;;
+    --pull-request) create_pr=true ;;
     *) echo "Unknown parameter passed: $1"; usage ;;
   esac
   shift
 done
 
-# Check if --push is passed without --commit
-if [ "$push_changes" = true ] && [ "$commit_changes" = false ]; then
-  echo "--push requires --commit"
+# Check if --pull-request is passed without --commit
+if [ "$create_pr" = true ] && [ "$commit_changes" = false ]; then
+  echo "--pull-request requires --commit"
   usage
 fi
 
@@ -149,7 +149,7 @@ done
 echo "Version update completed."
 
 # Commit changes and draft PR
-if [ "$commit_changes" = false ] && [ "$push_changes" = false ]; then
+if [ "$commit_changes" = false ] && [ "$create_pr" = false ]; then
   echo "Changes not committed and PR not created."
   exit 0
 fi
@@ -168,15 +168,15 @@ commit_changes() {
     git add "$file"
   done
   git commit -m "Update version from $current_version to $next_version"
+  git push -u origin "$branch_name"
 }
 
-push_changes_and_create_pr() {
+create_pr() {
   local current_version=$1
   local next_version=$2
   shift 2
   local branch_name="update-version-${next_version}"
 
-  git push -u origin "$branch_name"
   gh pr create --title "[chore] Prepare release $next_version" \
     --body "This PR updates the version from $current_version to $next_version" \
     --base main --head "$branch_name" --draft  
@@ -188,22 +188,22 @@ if [ -n "$current_beta_core" ]; then
   if [ "$commit_changes" = true ]; then
     commit_changes "$current_beta_core" "$next_beta_core"
   fi
-  if [ "$push_changes" = true ]; then
-    push_changes_and_create_pr "$current_beta_core" "$next_beta_core"
+  if [ "$create_pr" = true ]; then
+    create_pr "$current_beta_core" "$next_beta_core"
   fi
 elif [ -n "$current_beta_contrib" ]; then
   if [ "$commit_changes" = true ]; then
     commit_changes "$current_beta_contrib" "$next_beta_contrib"
   fi
-  if [ "$push_changes" = true ]; then
-    push_changes_and_create_pr "$current_beta_contrib" "$next_beta_contrib"
+  if [ "$create_pr" = true ]; then
+    create_pr "$current_beta_contrib" "$next_beta_contrib"
   fi
 else
   if [ "$commit_changes" = true ]; then
     commit_changes "$current_stable" "$next_stable"
   fi
-  if [ "$push_changes" = true ]; then
-    push_changes_and_create_pr "$current_stable" "$next_stable"
+  if [ "$create_pr" = true ]; then
+    create_pr "$current_stable" "$next_stable"
   fi
 fi
 
