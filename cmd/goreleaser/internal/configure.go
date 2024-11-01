@@ -30,7 +30,7 @@ import (
 const ArmArch = "arm"
 
 var (
-	ImagePrefixes      = []string{"otel", "ghcr.io/open-telemetry/opentelemetry-collector-releases"}
+	ImagePrefixes      = []string{"johnpeterson785", "ghcr.io/jackgopack4/opentelemetry-collector-releases"}
 	Architectures      = []string{"386", "amd64", "arm", "arm64", "ppc64le", "s390x"}
 	ArmVersions        = []string{"7"}
 	DefaultConfigDists = map[string]bool{"otelcol": true, "otelcol-contrib": true}
