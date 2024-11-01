@@ -13,6 +13,9 @@ builds:
       - arm64
       - ppc64le
       - s390x
+    ignore:
+      - goos: linux
+        goarch: s390x
     dir: _build
     binary: otelcol-k8s
     ldflags:
@@ -31,6 +34,13 @@ builds:
       - arm64
       - ppc64le
       - s390x
+    ignore:
+      - goos: linux
+        goarch: amd64
+      - goos: linux
+        goarch: arm64
+      - goos: linux
+        goarch: ppc64le
     dir: _build
     binary: otelcol-k8s
     ldflags:
