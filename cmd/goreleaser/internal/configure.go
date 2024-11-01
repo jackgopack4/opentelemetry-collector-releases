@@ -125,7 +125,7 @@ func Build(dist string, pie bool) config.Build {
 	if dist == "otelcol-k8s" {
 		goos = K8sGoos
 		archs = K8sArchs
-		ignore = make([]config.IgnoredBuild, 0)
+		ignore = generateIgnored(K8sGoos, K8sArchs, pie)
 		armVersions = make([]string, 0)
 
 	} else {
