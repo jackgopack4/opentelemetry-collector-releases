@@ -85,7 +85,7 @@ jobs:
           distribution: goreleaser-pro
           version: v2.3.2
           workdir: distributions/${{ inputs.distribution }}
-          args: release --clean --split --timeout 2h --release-header-tmpl=../../.github/release-template.md
+          args: release --verbose --clean --split --timeout 2h --release-header-tmpl=../../.github/release-template.md
         env:
           GOOS: ${{ matrix.GOOS }}
           GOARCH: ${{ matrix.GOARCH }}
