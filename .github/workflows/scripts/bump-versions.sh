@@ -155,9 +155,7 @@ commit_changes() {
   local branch_name="update-version-${next_version}"
 
   git checkout -b "$branch_name"
-  for file in "${files[@]}"; do
-    git add "$file"
-  done
+  git add .
   git commit -m "Update version from $current_version to $next_version"
   git push -u origin "$branch_name"
 }
