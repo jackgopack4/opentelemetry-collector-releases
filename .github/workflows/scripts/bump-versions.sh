@@ -7,12 +7,11 @@ set -e
 # current version(s) passed.
 
 # List of files to update
-files=(
+manifest_files=(
   "distributions/otelcol-contrib/manifest.yaml"
   "distributions/otelcol/manifest.yaml"
   "distributions/otelcol-k8s/manifest.yaml"
   "distributions/otelcol-otlp/manifest.yaml"
-  "Makefile"
 )
 
 # Function to display usage
@@ -83,6 +82,34 @@ if [ -n "$next_stable" ]; then
   validate_and_strip_version next_stable
 fi
 
+# Function to compare two semantic versions and return the maximum
+max_version() {
+  local version1=$1
+  local version2=$2
+
+  # Strip leading 'v' if present
+  version1=${version1#v}
+  version2=${version2#v}
+
+  # Split versions into components
+  IFS='.' read -r -a ver1 <<< "$version1"
+  IFS='.' read -r -a ver2 <<< "$version2"
+
+  # Compare major, minor, and patch versions
+  for i in {0..2}; do
+    if [[ ${ver1[i]} -gt ${ver2[i]} ]]; then
+      echo "$version1"
+      return
+    elif [[ ${ver1[i]} -lt ${ver2[i]} ]]; then
+      echo "$version2"
+      return
+    fi
+  done
+
+  # If versions are equal, return either
+  echo "$version1"
+}
+
 # Function to bump the minor version and reset patch version to 0
 bump_version() {
   local version=$1
@@ -103,6 +130,10 @@ if  [ -n "$current_beta_contrib" ] && [ -z "$next_beta_contrib" ]; then
   next_beta_contrib=$(bump_version "$current_beta_contrib")
 fi
 
+# Determine the maximum of next_beta_core and next_beta_contrib
+next_distribution_version=$(max_version "$next_beta_core" "$next_beta_contrib")
+validate_and_strip_version next_distribution_version
+
 # Infer the next stable version if current_stable provided and next version not supplied
 if [ -n "$current_stable" ] && [ -z "$next_stable" ]; then
   next_stable=$(bump_version "$current_stable")
@@ -122,18 +153,20 @@ else
   sed_command="sed -i"
 fi
 
-# Update versions in each file
-for file in "${files[@]}"; do
+# Update versions in each manifest file
+for file in "${manifest_files[@]}"; do
   if [ -f "$file" ]; then
     $sed_command "s/\(^.*go\.opentelemetry\.io\/collector\/.*\) v$escaped_current_beta_core/\1 v$next_beta_core/" "$file"
     $sed_command "s/\(^.*github\.com\/open-telemetry\/opentelemetry-collector-contrib\/.*\) v$escaped_current_beta_contrib/\1 v$next_beta_contrib/" "$file"
     $sed_command "s/\(^.*go\.opentelemetry\.io\/collector\/.*\) v$escaped_current_stable/\1 v$next_stable/" "$file"
-    $sed_command "s/version: $escaped_current_beta_core/version: $next_beta_core/" "$file"
-    $sed_command "s/OTELCOL_BUILDER_VERSION ?= $escaped_current_beta_core/OTELCOL_BUILDER_VERSION ?= $next_beta_core/" Makefile
+    $sed_command "s/version: .*/version: $next_distribution_version/" "$file"
   else
     echo "File $file does not exist"
   fi
 done
+
+# Update Makefile OCB version
+$sed_command "s/OTELCOL_BUILDER_VERSION ?= $escaped_current_beta_core/OTELCOL_BUILDER_VERSION ?= $next_beta_core/" Makefile
 
 echo "Version update completed."
 
