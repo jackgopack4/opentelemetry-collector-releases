@@ -1,19 +1,23 @@
 #!/bin/bash
-
+set -e
 # This script takes either current beta version, current stable version, or both,
 # and optionally next beta version and next stable version, and updates the version
 # in the specified files. If next version is not provided, it will infer the next 
 # semantic version (e.g. v0.110.0 -> v0.111.0 or v1.16.0 -> v1.17.0) based on the 
 # current version(s) passed.
 
+# List of files to update
+files=(
+  "distributions/otelcol-contrib/manifest.yaml"
+  "distributions/otelcol/manifest.yaml"
+  "distributions/otelcol-k8s/manifest.yaml"
+  "distributions/otelcol-otlp/manifest.yaml"
+  "Makefile"
+)
+
 # Function to display usage
 usage() {
-  echo "Usage: $0 [--commit] [--pull-request] --current-beta-core <current-beta-core> [--current-beta-contrib <current-beta-contrib>] [--current-stable <current-stable>] [--next-beta-core <next-beta-core>] [--next-beta-contrib <next-beta-contrib>] [--next-stable <next-stable>]"
-  echo "  --current-beta-core: Current beta version of the core component (e.g., v0.110.0)"
-  echo "  --current-beta-contrib: Current beta version of the contrib component (e.g., v0.110.0)"
-  echo "  --current-stable: Current stable version of the core component (e.g., v1.16.0)"
-  echo "  at least one of the above three arguments is required, or there is no version to update."
-  echo
+  echo "Usage: $0 [--commit] [--pull-request] [--next-beta-core <next-beta-core>] [--next-beta-contrib <next-beta-contrib>] [--next-stable <next-stable>]"
   echo "  --next-beta-core: Next beta version of the core component (e.g., v0.111.0)"
   echo "  --next-beta-contrib: Next beta version of the contrib component (e.g., v0.111.0)"
   echo "  --next-stable: Next stable version of the core component (e.g., v1.17.0)"
@@ -38,11 +42,11 @@ validate_and_strip_version() {
 commit_changes=false
 create_pr=false
 # Parse named arguments
+current_beta_core=$(awk '/^.*go\.opentelemetry\.io\/collector\/.* v0/ {print $4; exit}' distributions/otelcol/manifest.yaml)
+current_beta_contrib=$(awk '/^.*github\.com\/open-telemetry\/opentelemetry-collector-contrib\/.* v0/ {print $4; exit}' distributions/otelcol-contrib/manifest.yaml)
+current_stable=$(awk '/^.*go\.opentelemetry\.io\/collector\/.* v1/ {print $4; exit}' distributions/otelcol/manifest.yaml)
 while [[ "$#" -gt 0 ]]; do
   case $1 in
-    --current-beta-core) current_beta_core="$2"; shift ;;
-    --current-beta-contrib) current_beta_contrib="$2"; shift ;;
-    --current-stable) current_stable="$2"; shift ;;
     --next-beta-core) next_beta_core="$2"; shift ;;
     --next-beta-contrib) next_beta_contrib="$2"; shift ;;
     --next-stable) next_stable="$2"; shift ;;
@@ -56,11 +60,6 @@ done
 # Check if --pull-request is passed without --commit
 if [ "$create_pr" = true ] && [ "$commit_changes" = false ]; then
   echo "--pull-request requires --commit"
-  usage
-fi
-
-# Check if at least one of the required arguments is provided
-if [ -z "$current_beta_core" ] && [ -z "$current_beta_contrib" ] && [ -z "$current_stable" ]; then
   usage
 fi
 
@@ -109,44 +108,26 @@ if [ -n "$current_stable" ] && [ -z "$next_stable" ]; then
   next_stable=$(bump_version "$current_stable")
 fi
 
-# List of files to update
-files=(
-  "distributions/otelcol-contrib/manifest.yaml"
-  "distributions/otelcol/manifest.yaml"
-  "distributions/otelcol-k8s/manifest.yaml"
-  "distributions/otelcol-otlp/manifest.yaml"
-  "Makefile"
-)
-
+# add escape characters to the current versions to work with sed
+escaped_current_beta_core=${current_beta_core//./\\.}
+escaped_current_beta_contrib=${current_beta_contrib//./\\.}
+escaped_current_stable=${current_stable//./\\.}
 # Update versions in each file
 for file in "${files[@]}"; do
   if [ -f "$file" ]; then
-    temp_file=$(mktemp)
-    cp "$file" "$temp_file"
-    line_number=1
-    while IFS= read -r line; do
-      if [[ "$line" == *"github.com/open-telemetry/opentelemetry-collector-contrib"* ]]; then
-        if [ -n "$current_beta_contrib" ]; then
-          sed -i.bak "${line_number}s/$current_beta_contrib/$next_beta_contrib/" "$temp_file"
-        fi   
-      elif [[ "$line" == *"go.opentelemetry.io/collector"* ]]; then
-        if [ -n "$current_beta_core" ]; then
-          sed -i.bak "${line_number}s/$current_beta_core/$next_beta_core/" "$temp_file"
-        fi
-        if [ -n "$current_stable" ]; then
-          sed -i.bak "${line_number}s/$current_stable/$next_stable/" "$temp_file"
-        fi
-      fi
-      line_number=$((line_number + 1))
-    done < "$file"
-    mv "$temp_file" "$file"
-    rm "${temp_file}.bak"
+    sed -i '' "s/\(^.*go\.opentelemetry\.io\/collector\/.*\) v$escaped_current_beta_core/\1 v$next_beta_core/" "$file"
+    sed -i '' "s/\(^.*github\.com\/open-telemetry\/opentelemetry-collector-contrib\/.*\) v$escaped_current_beta_contrib/\1 v$next_beta_contrib/" "$file"
+    sed -i '' "s/\(^.*go\.opentelemetry\.io\/collector\/.*\) v$escaped_current_stable/\1 v$next_stable/" "$file"
+    sed -i '' "s/version: $escaped_current_beta_core/version: $next_beta_core/" "$file"
+    sed -i '' "s/OTELCOL_BUILDER_VERSION ?= $escaped_current_beta_core/OTELCOL_BUILDER_VERSION ?= $next_beta_core/" Makefile
   else
     echo "File $file does not exist"
   fi
 done
 
 echo "Version update completed."
+
+make chlog-update VERSION="v$next_beta_core"
 
 # Commit changes and draft PR
 if [ "$commit_changes" = false ] && [ "$create_pr" = false ]; then
